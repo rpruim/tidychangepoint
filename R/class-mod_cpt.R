@@ -274,7 +274,7 @@ plot.mod_cpt <- function(x, ...) {
     b <- b2[b2 > 0]
   }
   ggplot2::ggplot(
-    data = augment(x), 
+    data = augment(x),
     ggplot2::aes(x = index, y = y)
   ) +
     #    ggplot2::geom_rect(
@@ -283,35 +283,53 @@ plot.mod_cpt <- function(x, ...) {
     #      fill = "grey90"
     #    ) +
     ggplot2::geom_vline(
-      data = tibble::tibble(xintercept = unique(c(1, changepoints(x), nobs(x)))),
-      ggplot2::aes(xintercept = xintercept), 
+      data = tibble::tibble(
+        xintercept = unique(c(1, changepoints(x), nobs(x)))
+      ),
+      ggplot2::aes(xintercept = xintercept),
       linetype = 2
     ) +
     ggplot2::geom_hline(yintercept = mean(as.ts(x)), linetype = 3) +
     ggplot2::geom_rug(sides = "l") +
-    ggplot2::geom_line() + 
-    ggplot2::geom_line(ggplot2::aes(y = .fitted), color = "red") + 
-#    ggplot2::geom_segment(
-#      data = regions,
-#      ggplot2::aes(x = begin, y = mean, xend = end, yend = mean),
-#      color = "red"
-#    ) +
+    ggplot2::geom_line() +
+    ggplot2::geom_line(
+      ggplot2::aes(y = .fitted, group = cut_by_tau(index, b)),
+      color = "red"
+    ) +
+    #    ggplot2::geom_segment(
+    #      data = regions,
+    #      ggplot2::aes(x = begin, y = mean, xend = end, yend = mean),
+    #      color = "red"
+    #    ) +
     ggplot2::geom_segment(
       data = regions,
-      ggplot2::aes(x = begin, y = mean + 1.96 * sd, xend = end, yend = mean + 1.96 * sd),
+      ggplot2::aes(
+        x = begin,
+        y = mean + 1.96 * sd,
+        xend = end,
+        yend = mean + 1.96 * sd
+      ),
       color = "red",
       linetype = 3
     ) +
     ggplot2::geom_segment(
       data = regions,
-      ggplot2::aes(x = begin, y = mean - 1.96 * sd, xend = end, yend = mean - 1.96 * sd),
+      ggplot2::aes(
+        x = begin,
+        y = mean - 1.96 * sd,
+        xend = end,
+        yend = mean - 1.96 * sd
+      ),
       color = "red",
       linetype = 3
-    ) + 
+    ) +
     ggplot2::scale_x_continuous("Time Index (t)", breaks = b) +
     ggplot2::labs(
-#      title = "Original time series",
-      subtitle = paste("Global mean value is", round(mean(as.ts(x), na.rm = TRUE), 2))
+      #      title = "Original time series",
+      subtitle = paste(
+        "Global mean value is",
+        round(mean(as.ts(x), na.rm = TRUE), 2)
+      )
     )
 }
 
