@@ -1,0 +1,22 @@
+---
+title: grouping fitted values in plot() methods
+---
+
+```{r}
+library(tidychangepoint)
+plot(fit_meanshift_norm(CET, tau = 330), use_time_index = TRUE) 
+
+plot(segment(CET, method = "pelt"), use_time_index = TRUE)
+
+trend_wn <- CET |>
+  segment(
+    method = "ga", 
+    model_fn = fit_meanshift_norm, 
+    penalty_fn = BIC, 
+    population = log_gabin_population(CET),
+    popSize = 200, 
+    maxiter = 50,
+    run = 10
+  )
+plot(trend_wn, use_time_index = TRUE)
+```

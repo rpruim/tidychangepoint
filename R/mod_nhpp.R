@@ -256,7 +256,7 @@ diagnose.nhpp <- function(x, ...) {
   n <- nobs(x)
   
   exc <- exceedances(x)
-  z <-exc |>
+  z <- exc |>
     tibble::enframe(name = "cum_exceedances", value = "t_exceedance") |>
     dplyr::mutate(
       m = mcdf(x)
@@ -264,7 +264,7 @@ diagnose.nhpp <- function(x, ...) {
     # always add the last observation
     dplyr::bind_rows(
       data.frame(
-        cum_exceedances = c(0, length(exc)), 
+        cum_exceedances = c(0, length(exc)),
         t_exceedance = c(0, n),
         m = c(0, length(exc))
       )
@@ -273,20 +273,38 @@ diagnose.nhpp <- function(x, ...) {
       lower = stats::qpois(0.05, lambda = m),
       upper = stats::qpois(0.95, lambda = m),
     ) |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::mutate(
+      .groups = cut_by_tau(t_exceedance, changepoints(x))
+    )
   
   ggplot2::ggplot(data = z, ggplot2::aes(x = t_exceedance, y = cum_exceedances)) +
-    ggplot2::geom_vline(data = tidy(x), ggplot2::aes(xintercept = end), linetype = 3) +
+    ggplot2::geom_vline(
+      data = tidy(x),
+      ggplot2::aes(xintercept = end),
+      linetype = 3
+    ) +
     ggplot2::geom_abline(intercept = 0, slope = 0.5, linetype = 3) +
     ggplot2::geom_line() +
     ggplot2::scale_x_continuous("Time Index (t)", limits = c(0, n)) +
     ggplot2::scale_y_continuous("Cumulative Number of Exceedances (N)") +
-    ggplot2::geom_line(ggplot2::aes(y = m), color = "red") +
-    ggplot2::geom_line(ggplot2::aes(y = lower), color = "blue") +
-    ggplot2::geom_line(ggplot2::aes(y = upper), color = "blue") +
+    ggplot2::geom_line(ggplot2::aes(y = m, group = .groups), color = "red") +
+    ggplot2::geom_line(
+      ggplot2::aes(y = lower, group = .groups),
+      color = "blue"
+    ) +
+    ggplot2::geom_line(
+      ggplot2::aes(y = upper, group = .groups),
+      color = "blue"
+    ) +
     ggplot2::labs(
       title = "Exceedances of the threshold over time",
-      subtitle = paste("Total exceedances:", length(exc), " -- Threshold:", x$model_params[["threshold"]])
+      subtitle = paste(
+        "Total exceedances:",
+        length(exc),
+        " -- Threshold:",
+        x$model_params[["threshold"]]
+      )
     )
 }
 
