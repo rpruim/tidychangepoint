@@ -1,5 +1,6 @@
 ---
 title: grouping fitted values in plot() methods
+embed-resources: true
 ---
 
 ```{r}
